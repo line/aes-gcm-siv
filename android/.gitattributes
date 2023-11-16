@@ -1,0 +1,4 @@
+# Linux start script should use lf
+/gradlew	text eol=lf
+# Windows start script use crlf
+/gradlew.bat	text eol=crlf

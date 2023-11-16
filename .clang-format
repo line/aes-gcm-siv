@@ -1,0 +1,9 @@
+---
+BasedOnStyle: Microsoft
+# Custom Clang-Format Style
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+BinPackParameters: false
+BreakBeforeBraces: Linux
+ColumnLimit: 100
+CommentPragmas:  '^.*=.*$'
+...

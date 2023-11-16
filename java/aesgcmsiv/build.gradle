@@ -1,0 +1,142 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.linecorp'
+version = project.ext.versionName
+
+def getCpuArch() {
+    def platform = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform;
+    def arch = platform.currentArchitecture.getName().toLowerCase();
+
+    if (arch.matches('^(x86_64|amd64|x64|x86-64)$')) {
+        return "x86_64";
+    } else if (arch.matches('^(x86|i386|ia-32|i686)$')) {
+        return "x86";
+    } else if (arch.matches('^(aarch64|arm64|arm-v8)$')) {
+        return "arm64";
+    } else if (arch.matches('^(arm|arm-v7|armv7|arm32)$')) {
+        return "arm";
+    } else {
+        throw new Exception('Unsupported CPU Architecture')
+    }
+}
+
+def getOsName() {
+    def platform = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform;
+    def os = platform.currentOperatingSystem;
+
+    if (os.isLinux()) {
+        return "linux";
+    } else if (os.isMacOsX()) {
+        return "macos";
+    } else if (os.isWindows()) {
+        return "windows";
+    } else {
+        throw new Exception('Unsupported Operating System')
+    }
+}
+
+task buildAesGcmSivJni {
+    def srcDir = project.projectDir.parentFile.parentFile.absolutePath
+    def buildDir = project.buildDir.absolutePath + '/cpp'
+    def installDir = buildDir + '/jni'
+    def cpuArch = getCpuArch()
+    def osName = getOsName()
+
+    // Add input source files
+    inputs.files(fileTree(srcDir) {
+        include 'CMakeLists.txt'
+        include 'lib/CMakeLists.txt'
+        include 'lib/**/*.c'
+        include 'lib/**/*.h'
+        include 'jni/CMakeLists.txt'
+        include 'jni/**/*.c'
+        include 'jni/**/*.h'
+    }).skipWhenEmpty().withPropertyName('sourceFiles')
+
+    // Setup CMake configuration flags
+    def cmakeFlags  = [
+        '-DCMAKE_BUILD_TYPE=Release',
+        '-DBUILD_JNI=ON',
+    ]
+
+    if (cpuArch == 'x86_64') {
+        cmakeFlags.push('-DUSE_INTRINSICS=ON')
+    } else if (cpuArch == 'arm64') {
+        cmakeFlags.push('-DUSE_INTRINSICS=ON')
+        cmakeFlags.push('-DUSE_NEON=ON')
+    }
+
+    doLast {
+        exec {
+            workingDir project.buildDir
+            commandLine 'rm', '-rf', 'build'
+        }
+        exec {
+            workingDir project.buildDir
+            commandLine 'mkdir', '-p', 'cpp'
+        }
+        exec {
+            workingDir buildDir
+            def cmakeConfigure = [ 'cmake' ] + cmakeFlags + [ srcDir ]
+            commandLine cmakeConfigure
+        }
+        exec {
+            workingDir buildDir
+            commandLine 'cmake', '--build', '.'
+        }
+    }
+
+    if (osName == "linux") {
+        ext.runtimeFiles = [ installDir + '/' + 'libaesgcmsiv_jni.so' ]
+    } else if (osName == "macos") {
+        ext.runtimeFiles = [ installDir + '/' + 'libaesgcmsiv_jni.dylib' ]
+    } else if (osName == "windows") {
+        ext.runtimeFiles = [ installDir + '/' + 'aesgcmsiv_jni.dll' ]
+    } else {
+        throw new Exception('Unsupported Operating System')
+    }
+
+    outputs.files(ext.runtimeFiles)
+}
+
+task cleanAesGcmSiv {
+    def srcDir = project.rootDir.parentFile.absolutePath
+    def buildDir = project.buildDir.absolutePath + '/cpp'
+
+    onlyIf {
+        file(buildDir).exists()
+    }
+
+    doLast {
+        exec {
+            workingDir buildDir
+            commandLine 'cmake', '--build', '.', '--target', 'clean'
+        }
+        exec {
+            workingDir project.buildDir
+            commandLine 'rm', '-rf', 'build'
+        }
+    }
+}
+
+clean.dependsOn cleanAesGcmSiv
+
+processResources {
+    if(project.ext.isLocal) {
+        dependsOn buildAesGcmSivJni
+
+        from(buildAesGcmSivJni.runtimeFiles) {
+            into 'jni/' + getCpuArch()
+        }
+    } else {
+        from('build/stash') {
+            into 'jni/'
+        }
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13'
+}

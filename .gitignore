@@ -1,0 +1,9 @@
+## CMake build directory
+/build
+
+# Swift Package Manager
+/.build
+/.swiftpm
+
+# Visual Studio Code
+/.vscode

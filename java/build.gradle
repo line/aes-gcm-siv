@@ -1,0 +1,19 @@
+subprojects {
+    def major = project.VERSION_MAJOR.toInteger()
+    def minor = project.VERSION_MINOR.toInteger()
+    def patch = project.VERSION_PATCH.toInteger()
+
+    project.ext.versionName = "${major}.${minor}.${patch}"
+    project.ext.versionCode = (major * 10000) + (minor * 100) + patch
+    project.ext.isLocal = project.localBuild.toBoolean()
+    project.ext.isSnapshot = project.snapshotBuild.toBoolean()
+
+    if(project.ext.isSnapshot) {
+        def commitId = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+        if (commitId != "") {
+            project.ext.versionName += "-${commitId}"
+        }
+
+        project.ext.versionName += "-SNAPSHOT"
+    }
+}

@@ -1,0 +1,80 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.linecorp.aesgcmsiv'
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 33
+        ndkVersion '25.1.8937393'
+
+        versionName project.ext.versionName
+        versionCode project.ext.versionCode
+
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+        externalNativeBuild {
+            cmake {
+                arguments '-DBUILD_JNI=ON'
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            debuggable true
+
+            externalNativeBuild {
+                cmake {
+                    arguments '-DCMAKE_BUILD_TYPE=Debug'
+                }
+            }
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            def srcDir = project.projectDir.parentFile.parentFile.absolutePath
+            path srcDir + '/CMakeLists.txt'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    libraryVariants.all { variant ->
+        variant.outputs.each { output ->
+            output.outputFileName = "${archivesBaseName}-${versionName}-${buildType.name}.aar"
+        }
+    }
+
+    publishing {
+        singleVariant('release')
+    }
+}
+
+task cleanAesGcmSiv {
+    delete '.cxx'
+}
+
+clean.dependsOn cleanAesGcmSiv
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    testImplementation 'junit:junit:4.13.2'
+
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

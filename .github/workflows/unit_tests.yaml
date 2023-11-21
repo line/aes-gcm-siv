@@ -1,0 +1,43 @@
+name: Unit tests
+
+on: [push, pull_request]
+
+jobs:
+  c_unit_tests:
+    name: C unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Configure and Build
+        run: |
+          mkdir build && cd build
+          cmake -DBUILD_TESTING=ON ../
+          make
+
+      - name: Run unit tests
+        run: |
+          ctest -V
+        working-directory: build
+
+  java_unit_tests:
+    name: Java unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: gradle
+
+      - name: Run Gradle
+        run: |
+          ./gradlew build
+        working-directory: java

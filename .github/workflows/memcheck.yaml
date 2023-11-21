@@ -1,0 +1,59 @@
+name: Sanitizer Checks
+
+on: [push, pull_request]
+
+jobs:
+  memcheck:
+    name: Memcheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Valgrind
+        run: |
+          sudo apt-get update
+          sudo apt-get install valgrind
+
+      - name: Configure and Build
+        run: |
+          mkdir build && cd build
+          cmake -DBUILD_TESTING=ON ../
+          make
+
+      - name: Run Memcheck
+        run: |
+          ctest -V -T memcheck
+        working-directory: build
+
+  sanitizers:
+    name: Sanitizers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Configure and Build with AddressSanitizer
+        run: |
+          mkdir build && cd build
+          cmake -DBUILD_TESTING=ON -DENABLE_ASAN=ON ../
+          make
+
+      - name: Run AddressSanitizer
+        run: |
+          ctest -V
+        working-directory: build
+
+      - name: Configure and Build with ThreadSanitizer
+        run: |
+          rm -rf build
+          mkdir build && cd build
+          cmake -DBUILD_TESTING=ON -DENABLE_TSAN=ON ../
+          make
+
+      - name: Run ThreadSanitizer
+        run: |
+          ctest -V
+        working-directory: build

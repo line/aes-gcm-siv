@@ -48,11 +48,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
     libraryVariants.all { variant ->
         variant.outputs.each { output ->
             output.outputFileName = "${archivesBaseName}-${versionName}-${buildType.name}.aar"
@@ -64,11 +59,11 @@ android {
     }
 }
 
-task cleanAesGcmSiv {
+task cleanAesGcmSivJni {
     delete '.cxx'
 }
 
-clean.dependsOn cleanAesGcmSiv
+clean.dependsOn cleanAesGcmSivJni
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'

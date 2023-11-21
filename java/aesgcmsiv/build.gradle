@@ -69,14 +69,8 @@ task buildAesGcmSivJni {
     }
 
     doLast {
-        exec {
-            workingDir project.buildDir
-            commandLine 'rm', '-rf', 'build'
-        }
-        exec {
-            workingDir project.buildDir
-            commandLine 'mkdir', '-p', 'cpp'
-        }
+        delete buildDir
+        mkdir buildDir
         exec {
             workingDir buildDir
             def cmakeConfigure = [ 'cmake' ] + cmakeFlags + [ srcDir ]
@@ -100,28 +94,6 @@ task buildAesGcmSivJni {
 
     outputs.files(ext.runtimeFiles)
 }
-
-task cleanAesGcmSiv {
-    def srcDir = project.rootDir.parentFile.absolutePath
-    def buildDir = project.buildDir.absolutePath + '/cpp'
-
-    onlyIf {
-        file(buildDir).exists()
-    }
-
-    doLast {
-        exec {
-            workingDir buildDir
-            commandLine 'cmake', '--build', '.', '--target', 'clean'
-        }
-        exec {
-            workingDir project.buildDir
-            commandLine 'rm', '-rf', 'build'
-        }
-    }
-}
-
-clean.dependsOn cleanAesGcmSiv
 
 processResources {
     if(project.ext.isLocal) {

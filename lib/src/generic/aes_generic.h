@@ -20,10 +20,11 @@
  *  This file has been modified by LINE Corporation. Said modifications are:
  *  - implementations not used in the library have been removed
  *  - parameter checks has been changed to to match with other return codes
+ *  - mbedtls prefix replaced with generic to prevent symbol conflicts with other mbedtls modules
  */
 
-#ifndef MBEDTLS_AES_H
-#define MBEDTLS_AES_H
+#ifndef AES_GCMSIV_GENERIC_AES_H
+#define AES_GCMSIV_GENERIC_AES_H
 
 #include "common.h"
 
@@ -38,7 +39,7 @@ extern "C" {
 /**
  * \brief The AES context-type definition.
  */
-typedef struct mbedtls_aes_context {
+typedef struct generic_aes_context {
     /* The number of rounds. */
     int nr;
     /* AES round keys. */
@@ -49,19 +50,19 @@ typedef struct mbedtls_aes_context {
      * - Simplifying key expansion in the 256-bit case by generating an extra round key.
      */
     uint32_t buf[68];
-} mbedtls_aes_context;
+} generic_aes_context;
 
-void mbedtls_aes_init(mbedtls_aes_context *ctx);
-void mbedtls_aes_free(mbedtls_aes_context *ctx);
+void generic_aes_init(generic_aes_context *ctx);
+void generic_aes_free(generic_aes_context *ctx);
 
-aes_gcmsiv_status_t mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx,
+aes_gcmsiv_status_t generic_aes_setkey_enc(generic_aes_context *ctx,
                                            const uint8_t *key,
                                            size_t key_sz);
 
-aes_gcmsiv_status_t mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
+aes_gcmsiv_status_t generic_aes_crypt_ecb(generic_aes_context *ctx,
                                           const uint8_t plain[AES_BLOCK_SIZE],
                                           uint8_t cipher[AES_BLOCK_SIZE]);
-aes_gcmsiv_status_t mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
+aes_gcmsiv_status_t generic_aes_crypt_ctr(generic_aes_context *ctx,
                                           const uint8_t nonce[AES_BLOCK_SIZE],
                                           const uint8_t *input,
                                           size_t input_sz,
@@ -71,4 +72,4 @@ aes_gcmsiv_status_t mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
 }
 #endif /* __cplusplus */
 
-#endif /* MBEDTLS_AES_H */
+#endif /* AES_GCMSIV_GENERIC_AES_H */

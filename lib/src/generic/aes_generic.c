@@ -22,6 +22,7 @@
  *  This file has been modified by LINE Corporation. Said modifications are:
  *  - implementations not used in the library have been removed
  *  - parameter checks has been changed to to match with other return codes
+ *  - mbedtls prefix replaced with generic to prevent symbol conflicts with other mbedtls modules
  */
 
 /*
@@ -31,7 +32,7 @@
  *  http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
  */
 
-#include "aes_mbedtls.h"
+#include "aes_generic.h"
 
 #include <string.h>
 
@@ -72,18 +73,18 @@ static uint32_t RCON[10];
                AES_FT2(((Y1) >> 16) & 0xFF) ^ AES_FT3(((Y2) >> 24) & 0xFF);                        \
     } while (0)
 
-static void mbedtls_aes_gen_tables(void);
+static void generic_aes_gen_tables(void);
 
-void mbedtls_aes_init(mbedtls_aes_context *ctx)
+void generic_aes_init(generic_aes_context *ctx)
 {
     if (ctx == NULL) {
         return;
     }
 
-    memset(ctx, 0, sizeof(mbedtls_aes_context));
+    memset(ctx, 0, sizeof(generic_aes_context));
 }
 
-void mbedtls_aes_free(mbedtls_aes_context *ctx)
+void generic_aes_free(generic_aes_context *ctx)
 {
     if (ctx == NULL) {
         return;
@@ -93,7 +94,7 @@ void mbedtls_aes_free(mbedtls_aes_context *ctx)
 }
 
 // AES key schedule (encryption)
-aes_gcmsiv_status_t mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx,
+aes_gcmsiv_status_t generic_aes_setkey_enc(generic_aes_context *ctx,
                                            const uint8_t *key,
                                            size_t key_sz)
 {
@@ -120,7 +121,7 @@ aes_gcmsiv_status_t mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx,
     }
 
     if (is_init == 0) {
-        mbedtls_aes_gen_tables();
+        generic_aes_gen_tables();
         is_init = 1;
     }
 
@@ -183,7 +184,7 @@ aes_gcmsiv_status_t mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx,
     return AES_GCMSIV_SUCCESS;
 }
 
-aes_gcmsiv_status_t mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
+aes_gcmsiv_status_t generic_aes_crypt_ecb(generic_aes_context *ctx,
                                           const uint8_t plain[AES_BLOCK_SIZE],
                                           uint8_t cipher[AES_BLOCK_SIZE])
 {
@@ -232,7 +233,7 @@ aes_gcmsiv_status_t mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
     return AES_GCMSIV_SUCCESS;
 }
 
-aes_gcmsiv_status_t mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
+aes_gcmsiv_status_t generic_aes_crypt_ctr(generic_aes_context *ctx,
                                           const uint8_t nonce[AES_BLOCK_SIZE],
                                           const uint8_t *input,
                                           size_t input_sz,
@@ -251,7 +252,7 @@ aes_gcmsiv_status_t mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
     GET_UINT32_LE(counter, counter_block, 0);
 
     while (input_sz >= AES_BLOCK_SIZE) {
-        mbedtls_aes_crypt_ecb(ctx, counter_block, key_stream);
+        generic_aes_crypt_ecb(ctx, counter_block, key_stream);
 
         // Increment counter with wrapping
         counter += 1;
@@ -267,7 +268,7 @@ aes_gcmsiv_status_t mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
     }
 
     if (input_sz > 0) {
-        mbedtls_aes_crypt_ecb(ctx, counter_block, key_stream);
+        generic_aes_crypt_ecb(ctx, counter_block, key_stream);
 
         // Increment counter with wrapping
         counter += 1;
@@ -281,7 +282,7 @@ aes_gcmsiv_status_t mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
     return AES_GCMSIV_SUCCESS;
 }
 
-void mbedtls_aes_gen_tables(void)
+void generic_aes_gen_tables(void)
 {
     int i, x, y, z;
     int pow[256];

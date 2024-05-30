@@ -19,7 +19,7 @@ set(SOURCES
     src/utils.c
     src/arm64/aes_arm64.c
     src/arm64/polyval_arm64.c
-    src/generic/aes_mbedtls.c
+    src/generic/aes_generic.c
     src/generic/polyval_generic.c
     src/x86_64/aes_x86_64.c
     src/x86_64/polyval_x86_64.c
@@ -31,7 +31,7 @@ set(HEADERS
     include/utils.h
     src/arm64/aes_arm64.h
     src/arm64/polyval_arm64.h
-    src/generic/aes_mbedtls.h
+    src/generic/aes_generic.h
     src/generic/polyval_generic.h
     src/x86_64/aes_x86_64.h
     src/x86_64/polyval_x86_64.h

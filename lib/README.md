@@ -24,11 +24,10 @@ CMake should be used directly at the root directory of the project. The build st
 
 ```shell
 # Create build directory
-mkdir build
-cd build
+mkdir build && cd build
 
 # Configure CMake
-cmake aes-gcm-siv
+cmake ..
 
 # Compile library
 make
@@ -187,7 +186,7 @@ The project has the following two test suites:
 ## Benchmark
 
 The library can be benchmarked with the program located in [`benchmark`](./benchmark/).
-Building the benchmark program can be done with the CMake option `-BUILD_BENCHMARK=ON`.
+Building the benchmark program can be done with the CMake option `-DBUILD_BENCHMARK=ON`.
 
 It benchmarks performances of AES-GCM-SIV with:
 - both 128 and 256 bits keys

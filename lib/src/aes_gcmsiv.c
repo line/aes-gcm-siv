@@ -22,7 +22,7 @@
 #include "common.h"
 #include "utils.h"
 
-#include "generic/aes_mbedtls.h"
+#include "generic/aes_generic.h"
 #include "generic/polyval_generic.h"
 
 #ifdef TARGET_PLATFORM_ARM64
@@ -50,7 +50,7 @@ struct key_context {
 struct aes {
     int has_hw;
     union {
-        struct mbedtls_aes_context mbedtls;
+        struct generic_aes_context mbedtls;
 #ifdef TARGET_PLATFORM_ARM64
         struct aes_arm64 arm64;
 #endif /* TARGET_PLATFORM_ARM64 */
@@ -593,7 +593,7 @@ void aes_init(struct aes *ctx)
     }
 #endif /* TARGET_PLATFORM_X86_64 */
 
-    return mbedtls_aes_init(&ctx->storage.mbedtls);
+    return generic_aes_init(&ctx->storage.mbedtls);
 }
 
 void aes_free(struct aes *ctx)
@@ -614,7 +614,7 @@ void aes_free(struct aes *ctx)
     }
 #endif /* TARGET_PLATFORM_X86_64 */
 
-    mbedtls_aes_free(&ctx->storage.mbedtls);
+    generic_aes_free(&ctx->storage.mbedtls);
     aes_gcmsiv_zeroize(ctx, sizeof(*ctx));
 }
 
@@ -632,7 +632,7 @@ aes_gcmsiv_status_t aes_set_key(struct aes *ctx, const uint8_t *key, size_t key_
     }
 #endif /* TARGET_PLATFORM_X86_64 */
 
-    return mbedtls_aes_setkey_enc(&ctx->storage.mbedtls, key, key_sz);
+    return generic_aes_setkey_enc(&ctx->storage.mbedtls, key, key_sz);
 }
 
 aes_gcmsiv_status_t aes_ecb_encrypt(struct aes *ctx,
@@ -651,7 +651,7 @@ aes_gcmsiv_status_t aes_ecb_encrypt(struct aes *ctx,
     }
 #endif /* TARGET_PLATFORM_X86_64 */
 
-    return mbedtls_aes_crypt_ecb(&ctx->storage.mbedtls, plain, cipher);
+    return generic_aes_crypt_ecb(&ctx->storage.mbedtls, plain, cipher);
 }
 
 aes_gcmsiv_status_t aes_ctr(struct aes *ctx,
@@ -672,7 +672,7 @@ aes_gcmsiv_status_t aes_ctr(struct aes *ctx,
     }
 #endif /* TARGET_PLATFORM_X86_64 */
 
-    return mbedtls_aes_crypt_ctr(&ctx->storage.mbedtls, nonce, input, input_sz, output);
+    return generic_aes_crypt_ctr(&ctx->storage.mbedtls, nonce, input, input_sz, output);
 }
 
 /*

@@ -22,7 +22,7 @@
  *  This file has been modified by LINE Corporation. Said modifications are:
  *  - implementations not used in the library have been removed
  *  - parameter checks has been changed to to match with other return codes
- *  - mbedtls prefix replaced with generic to prevent symbol conflicts with other mbedtls modules
+ *  - changed mbedtls function names to prevent symbol conflicts with other mbedtls modules
  */
 
 /*
@@ -73,18 +73,18 @@ static uint32_t RCON[10];
                AES_FT2(((Y1) >> 16) & 0xFF) ^ AES_FT3(((Y2) >> 24) & 0xFF);                        \
     } while (0)
 
-static void generic_aes_gen_tables(void);
+static void aes_generic_gen_tables(void);
 
-void generic_aes_init(generic_aes_context *ctx)
+void aes_generic_init(struct aes_generic *ctx)
 {
-    if (ctx == NULL) {
+    if (NULL == ctx) {
         return;
     }
 
-    memset(ctx, 0, sizeof(generic_aes_context));
+    memset(ctx, 0x00, sizeof(*ctx));
 }
 
-void generic_aes_free(generic_aes_context *ctx)
+void aes_generic_free(struct aes_generic *ctx)
 {
     if (ctx == NULL) {
         return;
@@ -94,9 +94,7 @@ void generic_aes_free(generic_aes_context *ctx)
 }
 
 // AES key schedule (encryption)
-aes_gcmsiv_status_t generic_aes_setkey_enc(generic_aes_context *ctx,
-                                           const uint8_t *key,
-                                           size_t key_sz)
+aes_gcmsiv_status_t aes_generic_set_key(struct aes_generic *ctx, const uint8_t *key, size_t key_sz)
 {
     static int is_init = 0;
     unsigned int i;
@@ -121,7 +119,7 @@ aes_gcmsiv_status_t generic_aes_setkey_enc(generic_aes_context *ctx,
     }
 
     if (is_init == 0) {
-        generic_aes_gen_tables();
+        aes_generic_gen_tables();
         is_init = 1;
     }
 
@@ -184,9 +182,9 @@ aes_gcmsiv_status_t generic_aes_setkey_enc(generic_aes_context *ctx,
     return AES_GCMSIV_SUCCESS;
 }
 
-aes_gcmsiv_status_t generic_aes_crypt_ecb(generic_aes_context *ctx,
-                                          const uint8_t plain[AES_BLOCK_SIZE],
-                                          uint8_t cipher[AES_BLOCK_SIZE])
+aes_gcmsiv_status_t aes_generic_ecb_encrypt(struct aes_generic *ctx,
+                                            const uint8_t plain[AES_BLOCK_SIZE],
+                                            uint8_t cipher[AES_BLOCK_SIZE])
 {
     int i;
     uint32_t *RK, X0, X1, X2, X3, Y0, Y1, Y2, Y3;
@@ -233,11 +231,11 @@ aes_gcmsiv_status_t generic_aes_crypt_ecb(generic_aes_context *ctx,
     return AES_GCMSIV_SUCCESS;
 }
 
-aes_gcmsiv_status_t generic_aes_crypt_ctr(generic_aes_context *ctx,
-                                          const uint8_t nonce[AES_BLOCK_SIZE],
-                                          const uint8_t *input,
-                                          size_t input_sz,
-                                          uint8_t *output)
+aes_gcmsiv_status_t aes_generic_ctr(struct aes_generic *ctx,
+                                    const uint8_t nonce[AES_BLOCK_SIZE],
+                                    const uint8_t *input,
+                                    size_t input_sz,
+                                    uint8_t *output)
 {
     uint8_t counter_block[AES_BLOCK_SIZE];
     uint32_t counter;
@@ -252,7 +250,7 @@ aes_gcmsiv_status_t generic_aes_crypt_ctr(generic_aes_context *ctx,
     GET_UINT32_LE(counter, counter_block, 0);
 
     while (input_sz >= AES_BLOCK_SIZE) {
-        generic_aes_crypt_ecb(ctx, counter_block, key_stream);
+        aes_generic_ecb_encrypt(ctx, counter_block, key_stream);
 
         // Increment counter with wrapping
         counter += 1;
@@ -268,7 +266,7 @@ aes_gcmsiv_status_t generic_aes_crypt_ctr(generic_aes_context *ctx,
     }
 
     if (input_sz > 0) {
-        generic_aes_crypt_ecb(ctx, counter_block, key_stream);
+        aes_generic_ecb_encrypt(ctx, counter_block, key_stream);
 
         // Increment counter with wrapping
         counter += 1;
@@ -282,7 +280,7 @@ aes_gcmsiv_status_t generic_aes_crypt_ctr(generic_aes_context *ctx,
     return AES_GCMSIV_SUCCESS;
 }
 
-void generic_aes_gen_tables(void)
+void aes_generic_gen_tables(void)
 {
     int i, x, y, z;
     int pow[256];

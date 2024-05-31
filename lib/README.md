@@ -33,6 +33,8 @@ cmake ..
 make
 ```
 
+#### Hardware acceleration
+
 It is possible to enable architecture-specific hardware acceleration for some cryptographic operations, by enabling intrinsics support during the configuration step.
 
 1. The first way to achieve it is to set the flag `-DTARGET_PLATFORM=${ARCH}` value during the configuration.
@@ -55,6 +57,11 @@ The flags to set are the following:
 In this case, it is not needed to set any additional flags during the configuration phase, as everything is automated.
 
 More information on supported targets and feature detection can be found in [Supported platforms](#supported-platforms).
+
+#### Precomputed lookup tables
+
+The build can be configured to use precomputed lookup tables, rather than tables generated at runtime, in order to reduce the size of the `.data` segment.
+To achieve it, CMake needs to be passed the flag `-DUSE_ROM_TABLES=ON` during the configuration.
 
 ### Building with SwiftPM
 
@@ -80,6 +87,8 @@ To build the project using other build systems, the following directories and fi
 
 It might be possible to directly add the `-DUSE_INTRINSICS` flag to the compiler options to enable hardware accelerated code.
 Depending on the compiler and its version, it might be able to have intrinsics feature flags enabled automatically.
+
+It is also possible to directly pass the `-DUSE_ROM_TABLES` flag to the compiler options to enable precomputed lookup tables.
 
 ## Supported platforms
 

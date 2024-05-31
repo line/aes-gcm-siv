@@ -38,6 +38,12 @@
 
 #include "utils.h"
 
+#ifdef AES_GENERIC_ROM_TABLES
+
+#include "aes_generic_tables.h"
+
+#else
+
 // Forward S-box & tables
 static uint8_t FSb[256];
 static uint32_t FT0[256];
@@ -47,6 +53,11 @@ static uint32_t FT3[256];
 
 // Round constants
 static uint32_t RCON[10];
+
+static int aes_generic_gen_tables_is_init = 0;
+static void aes_generic_gen_tables(void);
+
+#endif /* AES_GENERIC_ROM_TABLES */
 
 // Tables generation code
 #define ROTL8(x)     (((x) << 8) & 0xFFFFFFFF) | ((x) >> 24)
@@ -73,8 +84,6 @@ static uint32_t RCON[10];
                AES_FT2(((Y1) >> 16) & 0xFF) ^ AES_FT3(((Y2) >> 24) & 0xFF);                        \
     } while (0)
 
-static void aes_generic_gen_tables(void);
-
 void aes_generic_init(struct aes_generic *ctx)
 {
     if (NULL == ctx) {
@@ -96,7 +105,6 @@ void aes_generic_free(struct aes_generic *ctx)
 // AES key schedule (encryption)
 aes_gcmsiv_status_t aes_generic_set_key(struct aes_generic *ctx, const uint8_t *key, size_t key_sz)
 {
-    static int is_init = 0;
     unsigned int i;
     uint32_t *RK;
 
@@ -118,10 +126,12 @@ aes_gcmsiv_status_t aes_generic_set_key(struct aes_generic *ctx, const uint8_t *
         return AES_GCMSIV_INVALID_KEY_SIZE;
     }
 
-    if (is_init == 0) {
+#ifndef AES_GENERIC_ROM_TABLES
+    if (aes_generic_gen_tables_is_init == 0) {
         aes_generic_gen_tables();
-        is_init = 1;
+        aes_generic_gen_tables_is_init = 1;
     }
+#endif /* AES_GENERIC_ROM_TABLES */
 
     ctx->rk = RK = ctx->buf;
 
@@ -280,6 +290,8 @@ aes_gcmsiv_status_t aes_generic_ctr(struct aes_generic *ctx,
     return AES_GCMSIV_SUCCESS;
 }
 
+#ifndef AES_GENERIC_ROM_TABLES
+
 void aes_generic_gen_tables(void)
 {
     int i, x, y, z;
@@ -330,3 +342,5 @@ void aes_generic_gen_tables(void)
         FT3[i] = ROTL8(FT2[i]);
     }
 }
+
+#endif /* AES_GENERIC_ROM_TABLES */

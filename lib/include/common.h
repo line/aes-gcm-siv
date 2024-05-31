@@ -47,6 +47,11 @@
 
 #endif /* USE_INTRINSICS */
 
+// Use const lookup tables
+#ifdef USE_ROM_TABLES
+#define AES_GENERIC_ROM_TABLES
+#endif /* USE_ROM_TABLES */
+
 // AES and Polyval constants
 #define AES_BLOCK_SIZE 16
 #define POLYVAL_SIZE   16

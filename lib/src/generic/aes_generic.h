@@ -20,10 +20,11 @@
  *  This file has been modified by LINE Corporation. Said modifications are:
  *  - implementations not used in the library have been removed
  *  - parameter checks has been changed to to match with other return codes
+ *  - changed mbedtls function names to prevent symbol conflicts with other mbedtls modules
  */
 
-#ifndef MBEDTLS_AES_H
-#define MBEDTLS_AES_H
+#ifndef AES_GCMSIV_AES_GENERIC_H
+#define AES_GCMSIV_AES_GENERIC_H
 
 #include "common.h"
 
@@ -38,7 +39,7 @@ extern "C" {
 /**
  * \brief The AES context-type definition.
  */
-typedef struct mbedtls_aes_context {
+struct aes_generic {
     /* The number of rounds. */
     int nr;
     /* AES round keys. */
@@ -49,26 +50,24 @@ typedef struct mbedtls_aes_context {
      * - Simplifying key expansion in the 256-bit case by generating an extra round key.
      */
     uint32_t buf[68];
-} mbedtls_aes_context;
+};
 
-void mbedtls_aes_init(mbedtls_aes_context *ctx);
-void mbedtls_aes_free(mbedtls_aes_context *ctx);
+void aes_generic_init(struct aes_generic *ctx);
+void aes_generic_free(struct aes_generic *ctx);
 
-aes_gcmsiv_status_t mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx,
-                                           const uint8_t *key,
-                                           size_t key_sz);
+aes_gcmsiv_status_t aes_generic_set_key(struct aes_generic *ctx, const uint8_t *key, size_t key_sz);
 
-aes_gcmsiv_status_t mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
-                                          const uint8_t plain[AES_BLOCK_SIZE],
-                                          uint8_t cipher[AES_BLOCK_SIZE]);
-aes_gcmsiv_status_t mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
-                                          const uint8_t nonce[AES_BLOCK_SIZE],
-                                          const uint8_t *input,
-                                          size_t input_sz,
-                                          uint8_t *output);
+aes_gcmsiv_status_t aes_generic_ecb_encrypt(struct aes_generic *ctx,
+                                            const uint8_t plain[AES_BLOCK_SIZE],
+                                            uint8_t cipher[AES_BLOCK_SIZE]);
+aes_gcmsiv_status_t aes_generic_ctr(struct aes_generic *ctx,
+                                    const uint8_t nonce[AES_BLOCK_SIZE],
+                                    const uint8_t *input,
+                                    size_t input_sz,
+                                    uint8_t *output);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* MBEDTLS_AES_H */
+#endif /* AES_GCMSIV_AES_GENERIC_H */

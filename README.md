@@ -52,8 +52,8 @@ Additionally, the software-based AES implementation is taken from [Mbed TLS](htt
 
 Some modifications have been made to better suit the aes-gcm-siv library, and the modified source files retain the original copyright information, with additional notice that they have been modified.
 The concerned files are the following:
-- `lib/src/generic/aes_mbedtls.c`
-- `lib/src/generic/aes_mbedtls.h`
+- `lib/src/generic/aes_generic.c`
+- `lib/src/generic/aes_generic.h`
 
 ## Further reading
 

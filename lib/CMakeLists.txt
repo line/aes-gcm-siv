@@ -25,13 +25,18 @@ set(SOURCES
     src/x86_64/polyval_x86_64.c
     )
 
-set(HEADERS
+set(HEADERS_PUBLIC
     include/aes_gcmsiv.h
+    )
+
+set(HEADERS
+    ${HEADERS_PUBLIC}
     include/common.h
     include/utils.h
     src/arm64/aes_arm64.h
     src/arm64/polyval_arm64.h
     src/generic/aes_generic.h
+    src/generic/aes_generic_tables.h
     src/generic/polyval_generic.h
     src/x86_64/aes_x86_64.h
     src/x86_64/polyval_x86_64.h
@@ -39,12 +44,14 @@ set(HEADERS
 
 add_library(${TARGET_NAME} STATIC ${SOURCES} ${HEADERS})
 set_target_properties(${TARGET_NAME} PROPERTIES C_STANDARD 11)
-set_target_properties(${TARGET_NAME} PROPERTIES PUBLIC_HEADER ${HEADERS})
+set_target_properties(${TARGET_NAME} PROPERTIES PUBLIC_HEADER "${HEADERS_PUBLIC}")
 
 if(MSVC)
     target_compile_options(${TARGET_NAME}
         PRIVATE -Wall
         PRIVATE $<$<BOOL:${USE_INTRINSICS}>:-DUSE_INTRINSICS>
+        PRIVATE $<$<BOOL:${USE_FEWER_TABLES}>:-DUSE_FEWER_TABLES>
+        PRIVATE $<$<BOOL:${USE_ROM_TABLES}>:-DUSE_ROM_TABLES>
         )
 else()
     target_compile_options(${TARGET_NAME}
@@ -53,6 +60,8 @@ else()
         PUBLIC -Wmissing-include-dirs -Wfloat-equal -Wshadow -Wcast-align
         PRIVATE $<$<BOOL:${USE_INTRINSICS}>:-DUSE_INTRINSICS>
         PRIVATE $<$<BOOL:${USE_NEON}>:-march=armv8-a+crypto>
+        PRIVATE $<$<BOOL:${USE_FEWER_TABLES}>:-DUSE_FEWER_TABLES>
+        PRIVATE $<$<BOOL:${USE_ROM_TABLES}>:-DUSE_ROM_TABLES>
         )
 
     # Set sanitizers flags

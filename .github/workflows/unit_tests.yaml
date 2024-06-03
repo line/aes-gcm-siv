@@ -7,6 +7,10 @@ jobs:
     name: C unit tests
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        cmake_flags: ["", "-DUSE_INTRINSICS=ON", "-DUSE_FEWER_TABLES=ON", "-DUSE_ROM_TABLES=ON"]
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -14,12 +18,11 @@ jobs:
       - name: Configure and Build
         run: |
           mkdir build && cd build
-          cmake -DBUILD_TESTING=ON ../
+          cmake -DBUILD_TESTING=ON ${{ matrix.cmake_flags }} ../
           make
 
       - name: Run unit tests
-        run: |
-          ctest -V
+        run: ctest -V
         working-directory: build
 
   java_unit_tests:
@@ -38,6 +41,5 @@ jobs:
           cache: gradle
 
       - name: Run Gradle
-        run: |
-          ./gradlew build
+        run: ./gradlew build
         working-directory: java

@@ -58,9 +58,13 @@ In this case, it is not needed to set any additional flags during the configurat
 
 More information on supported targets and feature detection can be found in [Supported platforms](#supported-platforms).
 
-#### Precomputed lookup tables
+#### Lookup tables
 
-The build can be configured to use precomputed lookup tables, rather than tables generated at runtime, in order to reduce the size of the `.data` segment.
+By default, the software implementation of AES uses 4 lookup tables to perform encryption.
+It is possible to reduce this number to only one table, at the cost of a higher runtime performance.
+To enable fewer lookup tables, CMake can be configured with the flag `-DUSE_FEWER_TABLES=ON`.
+
+The build can also be configured to use precomputed lookup tables, rather than tables generated at runtime, in order to reduce the size of the `.data` segment.
 To achieve it, CMake needs to be passed the flag `-DUSE_ROM_TABLES=ON` during the configuration.
 
 ### Building with SwiftPM
@@ -88,7 +92,8 @@ To build the project using other build systems, the following directories and fi
 It might be possible to directly add the `-DUSE_INTRINSICS` flag to the compiler options to enable hardware accelerated code.
 Depending on the compiler and its version, it might be able to have intrinsics feature flags enabled automatically.
 
-It is also possible to directly pass the `-DUSE_ROM_TABLES` flag to the compiler options to enable precomputed lookup tables.
+It is also possible to directly pass the `-DUSE_FEWER_TABLES` and `-DUSE_ROM_TABLES` flags to the compiler options to have more control on how the lookup tables are used.
+Their effect is similar to the options passed to CMake during the configuration of the build.
 
 ## Supported platforms
 

@@ -50,6 +50,7 @@ if(MSVC)
     target_compile_options(${TARGET_NAME}
         PRIVATE -Wall
         PRIVATE $<$<BOOL:${USE_INTRINSICS}>:-DUSE_INTRINSICS>
+        PRIVATE $<$<BOOL:${USE_FEWER_TABLES}>:-DUSE_FEWER_TABLES>
         PRIVATE $<$<BOOL:${USE_ROM_TABLES}>:-DUSE_ROM_TABLES>
         )
 else()
@@ -59,6 +60,7 @@ else()
         PUBLIC -Wmissing-include-dirs -Wfloat-equal -Wshadow -Wcast-align
         PRIVATE $<$<BOOL:${USE_INTRINSICS}>:-DUSE_INTRINSICS>
         PRIVATE $<$<BOOL:${USE_NEON}>:-march=armv8-a+crypto>
+        PRIVATE $<$<BOOL:${USE_FEWER_TABLES}>:-DUSE_FEWER_TABLES>
         PRIVATE $<$<BOOL:${USE_ROM_TABLES}>:-DUSE_ROM_TABLES>
         )
 

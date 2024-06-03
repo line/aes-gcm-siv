@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        cmake_flags: ["", "-DUSE_INTRINSICS=ON", "-DUSE_ROM_TABLES=ON"]
+        cmake_flags: ["", "-DUSE_INTRINSICS=ON", "-DUSE_FEWER_TABLES=ON", "-DUSE_ROM_TABLES=ON"]
 
     steps:
       - name: Checkout Repository
@@ -27,41 +27,49 @@ jobs:
           make
 
       - name: Run Memcheck
-        run: |
-          ctest -V -T memcheck
+        run: ctest -V -T memcheck
         working-directory: build
 
-  sanitizers:
-    name: Sanitizers
+  asan:
+    name: Address Sanitizer
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        cmake_flags: ["", "-DUSE_INTRINSICS=ON", "-DUSE_ROM_TABLES=ON"]
+        cmake_flags: ["", "-DUSE_INTRINSICS=ON", "-DUSE_FEWER_TABLES=ON", "-DUSE_ROM_TABLES=ON"]
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Configure and Build with AddressSanitizer
+      - name: Configure and Build
         run: |
           mkdir build && cd build
           cmake -DBUILD_TESTING=ON -DENABLE_ASAN=ON ${{ matrix.cmake_flags }} ../
           make
 
       - name: Run AddressSanitizer
-        run: |
-          ctest -V
+        run: ctest -V
         working-directory: build
 
-      - name: Configure and Build with ThreadSanitizer
+  tsan:
+    name: Thread Sanitizer
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        cmake_flags: ["", "-DUSE_INTRINSICS=ON"]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Configure and Build
         run: |
-          rm -rf build
           mkdir build && cd build
           cmake -DBUILD_TESTING=ON -DENABLE_TSAN=ON ${{ matrix.cmake_flags }} ../
           make
 
       - name: Run ThreadSanitizer
-        run: |
-          ctest -V
+        run: ctest -V
         working-directory: build

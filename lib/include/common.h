@@ -47,6 +47,11 @@
 
 #endif /* USE_INTRINSICS */
 
+// Use only one lookup table
+#ifdef USE_FEWER_TABLES
+#define AES_GENERIC_FEWER_TABLES
+#endif /* USE_FEWER_TABLES */
+
 // Use const lookup tables
 #ifdef USE_ROM_TABLES
 #define AES_GENERIC_ROM_TABLES

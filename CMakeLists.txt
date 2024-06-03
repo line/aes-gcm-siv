@@ -3,6 +3,8 @@ project(AES_GCMSIV C CXX)
 
 option(USE_INTRINSICS "Enable hardware acceleration primitives" OFF)
 option(USE_NEON "Enable ARM Neon intrinsics flags" OFF)
+
+option(USE_FEWER_TABLES "Enable fewer AES lookup tables" OFF)
 option(USE_ROM_TABLES "Enable precomputed AES lookup tables" OFF)
 
 option(BUILD_BENCHMARK "Build the benchmarking tree." OFF)

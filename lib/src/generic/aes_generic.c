@@ -47,9 +47,14 @@
 // Forward S-box & tables
 static uint8_t FSb[256];
 static uint32_t FT0[256];
+
+#ifndef AES_GENERIC_FEWER_TABLES
+
 static uint32_t FT1[256];
 static uint32_t FT2[256];
 static uint32_t FT3[256];
+
+#endif /* AES_GENERIC_FEWER_TABLES */
 
 // Round constants
 static uint32_t RCON[10];
@@ -60,14 +65,27 @@ static void aes_generic_gen_tables(void);
 #endif /* AES_GENERIC_ROM_TABLES */
 
 // Tables generation code
-#define ROTL8(x)     (((x) << 8) & 0xFFFFFFFF) | ((x) >> 24)
-#define XTIME(x)     (((x) << 1) ^ (((x)&0x80) ? 0x1B : 0x00))
-#define MUL(x, y)    (((x) && (y)) ? pow[(log[(x)] + log[(y)]) % 255] : 0)
+#define ROTL8(x)  (((uint32_t)((x) << 8)) | ((uint32_t)((x) >> 24)))
+#define ROTL16(x) (((uint32_t)((x) << 16)) | ((uint32_t)((x) >> 16)))
+#define ROTL24(x) (((uint32_t)((x) << 24)) | ((uint32_t)((x) >> 8)))
+#define XTIME(x)  (((x) << 1) ^ (((x)&0x80) ? 0x1B : 0x00))
+#define MUL(x, y) (((x) && (y)) ? pow[(log[(x)] + log[(y)]) % 255] : 0)
+
+#ifndef AES_GENERIC_FEWER_TABLES
 
 #define AES_FT0(idx) FT0[idx]
 #define AES_FT1(idx) FT1[idx]
 #define AES_FT2(idx) FT2[idx]
 #define AES_FT3(idx) FT3[idx]
+
+#else
+
+#define AES_FT0(idx) FT0[idx]
+#define AES_FT1(idx) ROTL8(FT0[idx])
+#define AES_FT2(idx) ROTL16(FT0[idx])
+#define AES_FT3(idx) ROTL24(FT0[idx])
+
+#endif /* AES_GENERIC_FEWER_TABLES */
 
 #define AES_FROUND(X0, X1, X2, X3, Y0, Y1, Y2, Y3)                                                 \
     do {                                                                                           \
@@ -337,9 +355,12 @@ void aes_generic_gen_tables(void)
         z = (y ^ x) & 0xFF;
 
         FT0[i] = ((uint32_t)y) ^ ((uint32_t)x << 8) ^ ((uint32_t)x << 16) ^ ((uint32_t)z << 24);
+
+#ifndef AES_GENERIC_FEWER_TABLES
         FT1[i] = ROTL8(FT0[i]);
         FT2[i] = ROTL8(FT1[i]);
         FT3[i] = ROTL8(FT2[i]);
+#endif /* AES_GENERIC_FEWER_TABLES */
     }
 }
 

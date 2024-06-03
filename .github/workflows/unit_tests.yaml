@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        cmake_flags: ["", "-DUSE_INTRINSICS=ON", "-DUSE_ROM_TABLES=ON"]
+        cmake_flags: ["", "-DUSE_INTRINSICS=ON", "-DUSE_FEWER_TABLES=ON", "-DUSE_ROM_TABLES=ON"]
 
     steps:
       - name: Checkout Repository
@@ -22,8 +22,7 @@ jobs:
           make
 
       - name: Run unit tests
-        run: |
-          ctest -V
+        run: ctest -V
         working-directory: build
 
   java_unit_tests:
@@ -42,6 +41,5 @@ jobs:
           cache: gradle
 
       - name: Run Gradle
-        run: |
-          ./gradlew build
+        run: ./gradlew build
         working-directory: java

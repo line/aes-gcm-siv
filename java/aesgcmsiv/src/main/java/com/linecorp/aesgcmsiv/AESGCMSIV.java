@@ -56,7 +56,8 @@ public final class AESGCMSIV {
         init(key);
     }
 
-    public void finalize() {
+    @Override
+    protected void finalize() {
         free();
     }
 

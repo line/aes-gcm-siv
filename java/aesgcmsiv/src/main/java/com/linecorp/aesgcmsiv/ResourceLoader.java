@@ -26,10 +26,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.Random;
 
 final class ResourceLoader {
-    private final static String TMP_DIR_PREFIX = "aesgcmsiv_jni";
-    private final static String JNI_BASE_DIR = "jni/";
-    private static File tmpDir = null;
-    private static File archDir = null;
+    private static final String TMP_DIR_PREFIX = "aesgcmsiv_jni";
+    private static final String JNI_BASE_DIR = "jni/";
+    private static File tmpDir;
+    private static File archDir;
 
     public static void loadLibraryFromJar(String name) throws IOException {
         File tmpLib = extractJarResource(name);
@@ -58,55 +58,55 @@ final class ResourceLoader {
         return tmpFile;
     }
 
-    private synchronized static File getTmpDirectory() throws IOException {
-        if (ResourceLoader.tmpDir != null) {
-            return ResourceLoader.tmpDir;
+    private static synchronized File getTmpDirectory() throws IOException {
+        if (tmpDir != null) {
+            return tmpDir;
         }
 
         String dirBase = System.getProperty("java.io.tmpdir");
         Random unsecureRandom = new Random(System.currentTimeMillis());
 
         // Get unique temporary directory
-        while (ResourceLoader.tmpDir == null) {
+        while (tmpDir == null) {
             String dirName = TMP_DIR_PREFIX + '-' + Long.toHexString(unsecureRandom.nextLong());
-            ResourceLoader.tmpDir = new File(dirBase, dirName);
+            tmpDir = new File(dirBase, dirName);
 
-            if (ResourceLoader.tmpDir.exists()) {
-                ResourceLoader.tmpDir = null;
+            if (tmpDir.exists()) {
+                tmpDir = null;
             }
         }
 
         // Create directory
-        if (!ResourceLoader.tmpDir.mkdir()) {
-            ResourceLoader.tmpDir = null;
+        if (!tmpDir.mkdir()) {
+            tmpDir = null;
             throw new IOException("No permission to create temporary directory");
         }
-        ResourceLoader.tmpDir.deleteOnExit();
+        tmpDir.deleteOnExit();
 
-        return ResourceLoader.tmpDir;
+        return tmpDir;
     }
 
-    private synchronized static File getArchDirectory() throws RuntimeException {
-        if (ResourceLoader.archDir != null) {
-            return ResourceLoader.archDir;
+    private static synchronized File getArchDirectory() throws RuntimeException {
+        if (archDir != null) {
+            return archDir;
         }
 
         String arch = System.getProperty("os.arch").toLowerCase();
 
         // Get normalized arch directory
         if (arch.matches("^(x86_64|amd64|x64|x86-64)$")) {
-            ResourceLoader.archDir = new File(JNI_BASE_DIR, "x86_64");
+            archDir = new File(JNI_BASE_DIR, "x86_64");
         } else if (arch.matches("^(x86|i386|ia-32|i686)$")) {
-            ResourceLoader.archDir = new File(JNI_BASE_DIR, "x86");
+            archDir = new File(JNI_BASE_DIR, "x86");
         } else if (arch.matches("^(aarch64|arm64|arm-v8)$")) {
-            ResourceLoader.archDir = new File(JNI_BASE_DIR, "arm64");
+            archDir = new File(JNI_BASE_DIR, "arm64");
         } else if (arch.matches("^(arm|arm-v7|armv7|arm32)$")) {
-            ResourceLoader.archDir = new File(JNI_BASE_DIR, "arm");
+            archDir = new File(JNI_BASE_DIR, "arm");
         } else {
             throw new RuntimeException("Unsupported CPU architecture: " + arch);
         }
 
-        return ResourceLoader.archDir;
+        return archDir;
     }
 
     private static String getLibNameByOs(String base) throws RuntimeException {

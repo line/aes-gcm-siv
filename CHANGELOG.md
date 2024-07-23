@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+
+- Add log information in the Java library when the ResourceLoader fails to load the native library
+
 ## 1.1.0
 
 - Rename symbols of the generic AES implementation to avoid dupplicated symbols conflicts when a project would use both Mbed-TLS and this library as static libraries.

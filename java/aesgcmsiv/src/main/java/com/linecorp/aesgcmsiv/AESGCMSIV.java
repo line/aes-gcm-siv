@@ -16,6 +16,9 @@
 
 package com.linecorp.aesgcmsiv;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.crypto.AEADBadTagException;
 
 public final class AESGCMSIV {
@@ -32,6 +35,7 @@ public final class AESGCMSIV {
         try {
             ResourceLoader.loadLibraryFromJar("aesgcmsiv_jni");
         } catch (Exception e) {
+            Logger.getLogger("AESGCMSIV").log(Level.SEVERE, "Failed to load aesgcmsiv_jni", e);
         }
     }
 

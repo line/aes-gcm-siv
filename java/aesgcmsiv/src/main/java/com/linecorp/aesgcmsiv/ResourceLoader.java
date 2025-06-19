@@ -20,115 +20,93 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Random;
 
 final class ResourceLoader {
-    private static final String TMP_DIR_PREFIX = "aesgcmsiv_jni";
-    private static final String JNI_BASE_DIR = "jni/";
-    private static File tmpDir;
-    private static File archDir;
+    private static final String JNI_BASE_DIR = "jni";
+    private static final String TMP_DIR_PREFIX = "aesgcmsiv_jni-";
+    private static volatile File libFile;
 
-    public static void loadLibraryFromJar(String name) throws IOException {
-        File tmpLib = extractJarResource(name);
-        System.load(tmpLib.getAbsolutePath());
+    public static void loadLibraryFromJar(String lib) throws IOException {
+        if (libFile == null) {
+            synchronized (ResourceLoader.class) {
+                if (libFile == null) {
+                    libFile = extractLibraryFromJar(lib);
+                    System.load(libFile.getAbsolutePath());
+                }
+            }
+        }
     }
 
-    private static File extractJarResource(String name) throws IOException {
-        String libName = getLibNameByOs(name);
+    private static File extractLibraryFromJar(String lib) throws IOException {
+        String libName = getLibNameByOs(lib);
 
-        // Get source file path
-        File archDir = getArchDirectory();
-        File jarFile = new File(archDir, libName);
+        // Get library file in JAR
+        String libPath = getLibPathByArch(libName);
+        InputStream libStream = getResourceAsStream(libPath);
 
-        // Get temporary destination path
-        File tmpDir = getTmpDirectory();
-        File tmpFile = new File(tmpDir, libName);
+        // Create temporary directory
+        File tmpDir = Files.createTempDirectory(TMP_DIR_PREFIX).toFile();
+        tmpDir.deleteOnExit();
 
         // Copy library to temporary directory
-        if (tmpFile.getParentFile().exists() == false && !tmpFile.mkdirs()) {
-            throw new FileSystemException("Failed to create path " + tmpFile.getAbsolutePath());
-        }
-
-        Files.copy(loadJarResource(jarFile.toString()), tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        File tmpFile = new File(tmpDir, libName);
         tmpFile.deleteOnExit();
+
+        Files.copy(libStream, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         return tmpFile;
     }
 
-    private static synchronized File getTmpDirectory() throws IOException {
-        if (tmpDir != null) {
-            return tmpDir;
-        }
-
-        String dirBase = System.getProperty("java.io.tmpdir");
-        Random unsecureRandom = new Random(System.currentTimeMillis());
-
-        // Get unique temporary directory
-        while (tmpDir == null) {
-            String dirName = TMP_DIR_PREFIX + '-' + Long.toHexString(unsecureRandom.nextLong());
-            tmpDir = new File(dirBase, dirName);
-
-            if (tmpDir.exists()) {
-                tmpDir = null;
-            }
-        }
-
-        // Create directory
-        if (!tmpDir.mkdir()) {
-            tmpDir = null;
-            throw new IOException("No permission to create temporary directory");
-        }
-        tmpDir.deleteOnExit();
-
-        return tmpDir;
-    }
-
-    private static synchronized File getArchDirectory() throws RuntimeException {
-        if (archDir != null) {
-            return archDir;
-        }
-
-        String arch = System.getProperty("os.arch").toLowerCase();
-
-        // Get normalized arch directory
-        if (arch.matches("^(x86_64|amd64|x64|x86-64)$")) {
-            archDir = new File(JNI_BASE_DIR, "x86_64");
-        } else if (arch.matches("^(x86|i386|ia-32|i686)$")) {
-            archDir = new File(JNI_BASE_DIR, "x86");
-        } else if (arch.matches("^(aarch64|arm64|arm-v8)$")) {
-            archDir = new File(JNI_BASE_DIR, "arm64");
-        } else if (arch.matches("^(arm|arm-v7|armv7|arm32)$")) {
-            archDir = new File(JNI_BASE_DIR, "arm");
-        } else {
-            throw new RuntimeException("Unsupported CPU architecture: " + arch);
-        }
-
-        return archDir;
-    }
-
-    private static String getLibNameByOs(String base) throws RuntimeException {
+    private static String getLibNameByOs(String lib) throws RuntimeException {
         String os = System.getProperty("os.name").toLowerCase();
 
         if (os.startsWith("linux")) {
-            return "lib" + base + ".so";
+            return "lib" + lib + ".so";
         } else if (os.startsWith("mac")) {
-            return "lib" + base + ".dylib";
+            return "lib" + lib + ".dylib";
         } else if (os.startsWith("windows")) {
-            return base + ".dll";
+            return lib + ".dll";
         }
 
-        throw new RuntimeException("Unsupported runtime environment: " + os);
+        throw new RuntimeException("Unsupported OS environment: " + os);
     }
 
-    private static InputStream loadJarResource(String resource) throws IOException {
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
-        if (is == null) {
-            throw new FileNotFoundException(resource + " not found in JAR");
+    private static String getLibPathByArch(String libName) throws RuntimeException {
+        String arch = System.getProperty("os.arch").toLowerCase();
+
+        if (arch.matches("^(x86_64|amd64|x64|x86-64)$")) {
+            return JNI_BASE_DIR + "/x86_64/" + libName;
+        } else if (arch.matches("^(x86|i386|ia-32|i686)$")) {
+            return JNI_BASE_DIR + "/x86/" + libName;
+        } else if (arch.matches("^(aarch64|arm64|arm-v8)$")) {
+            return JNI_BASE_DIR + "/arm64/" + libName;
+        } else if (arch.matches("^(arm|arm-v7|armv7|arm32)$")) {
+            return JNI_BASE_DIR + "/arm/" + libName;
         }
 
-        return is;
+        throw new RuntimeException("Unsupported CPU architecture: " + arch);
+    }
+
+    private static InputStream getResourceAsStream(String resource) throws IOException {
+        ClassLoader loader;
+        InputStream stream;
+
+        // Context ClassLoader
+        loader = Thread.currentThread().getContextClassLoader();
+        stream = (loader != null) ? loader.getResourceAsStream(resource) : null;
+        if (stream != null) {
+            return stream;
+        }
+
+        // Fallback on class ClassLoader
+        loader = ResourceLoader.class.getClassLoader();
+        stream = (loader != null) ? loader.getResourceAsStream(resource) : null;
+        if (stream != null) {
+            return stream;
+        }
+
+        throw new FileNotFoundException("Resource not found in JAR: " + resource);
     }
 }

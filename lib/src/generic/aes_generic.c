@@ -68,7 +68,7 @@ static void aes_generic_gen_tables(void);
 #define ROTL8(x)  (((uint32_t)((x) << 8)) | ((uint32_t)((x) >> 24)))
 #define ROTL16(x) (((uint32_t)((x) << 16)) | ((uint32_t)((x) >> 16)))
 #define ROTL24(x) (((uint32_t)((x) << 24)) | ((uint32_t)((x) >> 8)))
-#define XTIME(x)  (((x) << 1) ^ (((x)&0x80) ? 0x1B : 0x00))
+#define XTIME(x)  (((x) << 1) ^ (((x) & 0x80) ? 0x1B : 0x00))
 #define MUL(x, y) (((x) && (y)) ? pow[(log[(x)] + log[(y)]) % 255] : 0)
 
 #ifndef AES_GENERIC_FEWER_TABLES
@@ -239,16 +239,16 @@ aes_gcmsiv_status_t aes_generic_ecb_encrypt(struct aes_generic *ctx,
 
     AES_FROUND(Y0, Y1, Y2, Y3, X0, X1, X2, X3);
 
-    X0 = *RK++ ^ ((uint32_t)FSb[(Y0)&0xFF]) ^ ((uint32_t)FSb[(Y1 >> 8) & 0xFF] << 8) ^
+    X0 = *RK++ ^ ((uint32_t)FSb[(Y0) & 0xFF]) ^ ((uint32_t)FSb[(Y1 >> 8) & 0xFF] << 8) ^
          ((uint32_t)FSb[(Y2 >> 16) & 0xFF] << 16) ^ ((uint32_t)FSb[(Y3 >> 24) & 0xFF] << 24);
 
-    X1 = *RK++ ^ ((uint32_t)FSb[(Y1)&0xFF]) ^ ((uint32_t)FSb[(Y2 >> 8) & 0xFF] << 8) ^
+    X1 = *RK++ ^ ((uint32_t)FSb[(Y1) & 0xFF]) ^ ((uint32_t)FSb[(Y2 >> 8) & 0xFF] << 8) ^
          ((uint32_t)FSb[(Y3 >> 16) & 0xFF] << 16) ^ ((uint32_t)FSb[(Y0 >> 24) & 0xFF] << 24);
 
-    X2 = *RK++ ^ ((uint32_t)FSb[(Y2)&0xFF]) ^ ((uint32_t)FSb[(Y3 >> 8) & 0xFF] << 8) ^
+    X2 = *RK++ ^ ((uint32_t)FSb[(Y2) & 0xFF]) ^ ((uint32_t)FSb[(Y3 >> 8) & 0xFF] << 8) ^
          ((uint32_t)FSb[(Y0 >> 16) & 0xFF] << 16) ^ ((uint32_t)FSb[(Y1 >> 24) & 0xFF] << 24);
 
-    X3 = *RK++ ^ ((uint32_t)FSb[(Y3)&0xFF]) ^ ((uint32_t)FSb[(Y0 >> 8) & 0xFF] << 8) ^
+    X3 = *RK++ ^ ((uint32_t)FSb[(Y3) & 0xFF]) ^ ((uint32_t)FSb[(Y0 >> 8) & 0xFF] << 8) ^
          ((uint32_t)FSb[(Y1 >> 16) & 0xFF] << 16) ^ ((uint32_t)FSb[(Y2 >> 24) & 0xFF] << 24);
 
     PUT_UINT32_LE(X0, cipher, 0);

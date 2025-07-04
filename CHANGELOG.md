@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- Update Java library `ReseourceLoader`:
+  - add a fallback on the class loader that is used when the Context class loader is `null`
+  - refactor code to have better handling of synchronized sections and to avoid loading the library multiple times
+
 ## 1.2.0
 
 - Add log information in the Java library when the ResourceLoader fails to load the native library

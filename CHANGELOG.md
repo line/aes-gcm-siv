@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+- Update Android library to support [16K KB page sizes](https://developer.android.com/guide/practices/page-sizes) for `x86_64` and `arm64-v8a` devices
+
 ## 1.3.0
 
 - Update Java library `ReseourceLoader`:

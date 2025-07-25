@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace 'com.linecorp.aesgcmsiv'
-    compileSdk 33
+    compileSdk 36
 
     defaultConfig {
         minSdk 24
-        targetSdk 33
-        ndkVersion '25.1.8937393'
+        targetSdk 35
+        ndkVersion '27.2.12479018'
 
         versionName project.ext.versionName
         versionCode project.ext.versionCode
@@ -18,7 +18,8 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments '-DBUILD_JNI=ON'
+                // ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES is only necessary with NDK r27
+                arguments '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON', '-DBUILD_JNI=ON'
             }
         }
     }

@@ -312,13 +312,13 @@ JNIEXPORT void JNICALL Java_com_linecorp_aesgcmsiv_AESGCMSIV_free(JNIEnv *env, j
         return;
     }
 
-    aes_gcmsiv_free(ctx);
-    free(ctx);
-    ctx = NULL;
-
-    res = jni_set_ctx(env, self, ctx);
+    res = jni_set_ctx(env, self, NULL);
     if (0 != res) {
         return;
+    }
+
+    aes_gcmsiv_free(ctx);
+    free(ctx);
     }
 }
 

@@ -16,21 +16,20 @@
 
 package com.linecorp.aesgcmsiv;
 
+import javax.crypto.AEADBadTagException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.crypto.AEADBadTagException;
-
 public final class AESGCMSIV {
     /**
-     * Size for AES-GCM-SIV nonce
+     * Size of an AES-GCM-SIV nonce.
      */
     public static final int NONCE_SIZE = 12;
+    /**
+     * Size of an AES-GCM-SIV tag.
+     */
     public static final int TAG_SIZE = 16;
 
-    /**
-     * Load the shared library
-     */
     static {
         try {
             ResourceLoader.loadLibraryFromJar("aesgcmsiv_jni");
@@ -40,29 +39,33 @@ public final class AESGCMSIV {
     }
 
     /**
-     * Pointer to native AES-GCM-SIV context
+     * Pointer to the native AES-GCM-SIV context
      */
-    private long aes_gcmsiv_ctx;
+    private long aesGcmSivContext;
 
     /**
      * Create a AES-GCM-SIV cipher for a specified key.
      *
-     * @param key the AES key, whose length can be 128 or 256 bits (16 or 32 bytes respectively).
-     *            AES-GCM-SIV does not support AES with a key of 192 bits.
-     * @throws IllegalArgumentException if the input parameter does not have a valid size
+     * @param key the AES key, whose length can be 128 or 256-bit long (16 or 32 bytes respectively).
+     *            AES-GCM-SIV does not support 192-bit keys.
+     * @throws IllegalArgumentException if the input key does not have a valid size.
      */
     public AESGCMSIV(byte[] key) throws IllegalArgumentException {
-        aes_gcmsiv_ctx = 0;
-        init(key);
+        aesGcmSivContext = initNative(key);
     }
 
     @Override
     protected void finalize() {
-        free();
+        try {
+            freeNative(aesGcmSivContext);
+        } finally {
+            // Set context to null, even when freeNative fails
+            aesGcmSivContext = 0;
+        }
     }
 
     /**
-     * Encrypt plaintext, and authenticate this plaintext and additional data.
+     * Encrypt plaintext, and authenticate this plaintext and the additional data.
      *
      * @param nonce          the random (but not secret) nonce to use for this encryption.
      *                       It must be 96-bit long (12 bytes).
@@ -73,11 +76,13 @@ public final class AESGCMSIV {
      *                       It can be null or empty if there is no additional data to authenticate.
      *                       Maximum size is 2^36 bytes.
      * @return the ciphertext of the plaintext, which embed as well the authentication tag for the plaintext and the additional data.
-     *         It does not embed the nonce or additional data if any.
-     * @throws IllegalArgumentException if any of the input parameters don't have a valid size
+     * It does not embed the nonce or additional data if any.
+     * @throws IllegalArgumentException if any of the nonce, plaintext or additionalData does not have a valid size.
      */
-    public native byte[] encrypt(byte[] nonce, byte[] plaintext, byte[] additionalData)
-            throws IllegalArgumentException;
+    public byte[] encrypt(byte[] nonce, byte[] plaintext, byte[] additionalData)
+            throws IllegalArgumentException {
+        return encryptNative(aesGcmSivContext, nonce, plaintext, additionalData);
+    }
 
     /**
      * @param nonce          the random (but not secret) nonce used during the encryption.
@@ -87,15 +92,23 @@ public final class AESGCMSIV {
      * @param additionalData the additional data that was authenticated during encryption.
      *                       It can be null or empty if there was no additional data authenticated.
      * @return the plaintext corresponding to the ciphertext provided.
-     *         It can be an empty array if no data was encrypted, but only additional data were authenticated.
-     * @throws IllegalArgumentException if any of the input parameters don't have a valid size
-     * @throws AEADBadTagException      if the embedded authentication tag in the ciphertext does not match the
-     *                                  authentication tag of the plaintext and the additional data
+     * It can be an empty array if no data was encrypted, but only additional data were authenticated.
+     * @throws IllegalArgumentException if any of the nonce, ciphertext or additionalData does not have a valid size.
+     * @throws AEADBadTagException      if the embedded authentication tag in the ciphertext does not match the calculated
+     *                                  authentication tag of the plaintext and the additional data.
      */
-    public native byte[] decrypt(byte[] nonce, byte[] ciphertext, byte[] additionalData)
+    public byte[] decrypt(byte[] nonce, byte[] ciphertext, byte[] additionalData)
+            throws IllegalArgumentException, AEADBadTagException {
+        return decryptNative(aesGcmSivContext, nonce, ciphertext, additionalData);
+    }
+
+    private native long initNative(byte[] key) throws IllegalArgumentException;
+
+    private native void freeNative(long aesGcmSivContext);
+
+    private native byte[] encryptNative(long aesGcmSivContext, byte[] nonce, byte[] plaintext, byte[] additionalData)
+            throws IllegalArgumentException;
+
+    private native byte[] decryptNative(long aesGcmSivContext, byte[] nonce, byte[] ciphertext, byte[] additionalData)
             throws IllegalArgumentException, AEADBadTagException;
-
-    private native void init(byte[] key) throws IllegalArgumentException;
-
-    private native void free();
 }

@@ -3,8 +3,8 @@
 ## 1.4.0
 
 - Refactor JNI code to not manipulate context pointer directly, and have better exception handling
-- Update Android API to reflect JNI changes
-- Update Java API to reflect JNI changes
+- Update Android library to reflect JNI changes
+- Update Java library to reflect JNI changes
 - Update unit tests to add tests on finalize method
 
 ## 1.3.2

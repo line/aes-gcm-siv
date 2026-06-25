@@ -7,8 +7,15 @@ option(THREADS_PREFER_PTHREAD_FLAG "Use -pthread for compiler and linker flag" O
 find_package(Threads REQUIRED)
 
 # Build Google Test
-if(NOT TARGET googletest)
-    include(googletest.cmake)
+if(NOT TARGET GTest::gtest)
+    include(FetchContent)
+
+    FetchContent_Declare(googletest
+        GIT_REPOSITORY https://github.com/google/googletest
+        GIT_TAG v1.16.0
+    )
+
+    FetchContent_MakeAvailable(googletest)
 endif()
 
 # Build test suites

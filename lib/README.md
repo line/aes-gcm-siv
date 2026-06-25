@@ -16,7 +16,7 @@ It is implemented with cryptographic hardware acceleration on some CPU architect
 ### Building with CMake
 
 This library mainly supports CMake as a build system. The following tools are required for building it:
-- CMake (minimum version `3.10`)
+- CMake (minimum version `3.14`)
 - make
 - a C compiler
 

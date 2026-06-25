@@ -36,7 +36,7 @@ else()
         GIT_REPOSITORY    https://github.com/google/googletest.git
         GIT_CONFIG        advice.detachedHead=false
         GIT_SHALLOW       ON
-        GIT_TAG           release-1.11.0
+        GIT_TAG           v1.16.0
         CMAKE_CACHE_ARGS  -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DCMAKE_INSTALL_LIBDIR:PATH=<INSTALL_DIR>/${GOOGLETEST_LIBDIR}
         CMAKE_COMMAND     ${GTEST_CMAKE_COMMAND}
         BUILD_COMMAND     ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG>

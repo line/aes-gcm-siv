@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 project(AES_GCMSIV C CXX)
 
 option(USE_INTRINSICS "Enable hardware acceleration primitives" OFF)

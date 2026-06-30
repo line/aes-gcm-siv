@@ -21,7 +21,7 @@ target_include_directories(${TARGET_NAME}
 
 target_link_libraries(${TARGET_NAME}
     PRIVATE aes_gcmsiv
-    PRIVATE googletest
+    PRIVATE GTest::gtest
     )
 
 add_test(NAME ${TARGET_NAME} COMMAND ${TARGET_NAME})

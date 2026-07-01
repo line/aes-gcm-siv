@@ -16,7 +16,7 @@ The library relies on Gradle for building.
 
 The following tools are needed to build the library:
 - Java Development Kit (minimum JDK 8)
-- CMake (minimum version `3.10`)
+- CMake (minimum version `3.14`)
 - make
 - a C compiler
 

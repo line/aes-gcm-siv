@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0
+
+- Raise CMake minimum required version to `3.14`
+- Update googletest to `v1.16.0`
+
 ## 1.4.0
 
 - Refactor JNI code to not manipulate context pointer directly, and have better exception handling

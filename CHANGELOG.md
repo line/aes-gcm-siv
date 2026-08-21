@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add the `com.linecorp.aesgcmsiv.tmpdir` JVM property to configure where the Java library extracts its native JNI library
+
 ## 1.5.0
 
 - Raise CMake minimum required version to `3.14`

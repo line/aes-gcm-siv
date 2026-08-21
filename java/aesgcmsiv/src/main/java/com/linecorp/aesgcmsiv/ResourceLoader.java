@@ -21,10 +21,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 final class ResourceLoader {
     private static final String JNI_BASE_DIR = "jni";
+    private static final String TMP_DIR_PROPERTY = "com.linecorp.aesgcmsiv.tmpdir";
     private static final String TMP_DIR_PREFIX = "aesgcmsiv_jni-";
     private static volatile File libFile;
 
@@ -47,7 +50,7 @@ final class ResourceLoader {
         InputStream libStream = getResourceAsStream(libPath);
 
         // Create temporary directory
-        File tmpDir = Files.createTempDirectory(TMP_DIR_PREFIX).toFile();
+        File tmpDir = Files.createTempDirectory(getTmpDirectory(), TMP_DIR_PREFIX).toFile();
         tmpDir.deleteOnExit();
 
         // Copy library to temporary directory
@@ -57,6 +60,15 @@ final class ResourceLoader {
         Files.copy(libStream, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         return tmpFile;
+    }
+
+    static Path getTmpDirectory() {
+        String tmpDir = System.getProperty(TMP_DIR_PROPERTY);
+        if (tmpDir == null || tmpDir.trim().isEmpty()) {
+            tmpDir = System.getProperty("java.io.tmpdir");
+        }
+
+        return Paths.get(tmpDir);
     }
 
     private static String getLibNameByOs(String lib) throws RuntimeException {

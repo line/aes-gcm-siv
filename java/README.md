@@ -92,7 +92,10 @@ Then, the `os.name` property is checked with a `startWith` to see which library 
 If the file cannot be found in the JAR archive, then an exception is raised.
 
 The native JNI library is extracted from the JAR and copied in a temporary folder `${TEMP_DIR}/aesgcmsiv_jni-${RANDOM}`, where it can be loaded by the JVM.
-The `TEMP_DIR` value is taken from the JVM property `java.io.tmpdir`, and should have permissions to create directory and files.
+The `TEMP_DIR` value is taken from the JVM property `com.linecorp.aesgcmsiv.tmpdir` when it is readable and set to a non-blank value.
+If the property is missing, blank, or cannot be read due to a security restriction, the library uses the JDK's default temporary-directory mechanism without directly reading `java.io.tmpdir`.
+For example, use `-Dcom.linecorp.aesgcmsiv.tmpdir=/var/lib/aesgcmsiv/tmp` to configure a library-specific location.
+The directory must already exist, must allow the application to create directories and files, and must be on a filesystem that permits executable mappings of shared libraries.
 The `RANDOM` value is a random number prefix used to avoid collision of names as much as possible.
 
 The temporary JNI library copied on the disk is marked as `deleteOnExit`, so it should be deleted automatically by the JVM when it stops.

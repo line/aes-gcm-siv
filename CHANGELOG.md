@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.6.0
 
 - Add the `com.linecorp.aesgcmsiv.tmpdir` JVM property to configure where the Java library extracts its native JNI library
 
